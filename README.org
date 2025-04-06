@@ -1,0 +1,44 @@
+#+title: termclip.el - Terminal Clipboard Integration for Emacs
+
+* Description
+=termclip.el= provides seamless system clipboard integration for Emacs running in terminal mode (currently only for Wayland environments).
+
+* Key Features
++ Copy/Paste between Emacs in terminal and system clipboard
++ Preserves standard Emacs keybindings (=C-w=, =M-w=, =C-y=)
++ Automatic detection of terminal vs graphical mode
+
+* Installation
+** Using package managers
+*** straight.el
+#+begin_src emacs-lisp
+  (straight-use-package
+   '(termclip :type git :host github :repo "judaew/termclip.el"))
+
+  ;; OR
+
+  (use-package termclip
+    :straight (termclip :type git :host github :repo "judaew/termclip.el"))
+#+end_src
+*** use-package
+#+begin_src emacs-lisp
+  (use-package termclip
+    :ensure t)
+#+end_src
+** Manual Installation
+Add =termclip.el= to your =load-path= and require. Something like
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "path/to/termclip.el")
+  (require 'termclip)
+#+end_src
+* Requirements
++ Wayland clipboard utilities (=wl-copy= and =wl-paste=)
+* Why Use This?
+When running Emacs in terminal mode (e.g., via =emacs -nw= or in terminal multiplexers), the standard clipboard integration doesn't work. This package solves that by:
+
+- Bridging Emacs' kill-ring with system clipboard
+- Maintaining familiar keybindings
+- Working automatically in terminal mode
+
+* License
+MIT (see [[file:LICENSE][LICENSE]] file)
