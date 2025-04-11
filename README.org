@@ -1,16 +1,15 @@
-#+title: termclip.el - Terminal Clipboard Integration for Emacs
-
-* Description
+* termclip.el - Terminal Clipboard Integration
+** Description
 =termclip.el= provides seamless system clipboard integration for Emacs running in terminal mode (for Wayland, X.org and macOS environments).
 
-* Key Features
+** Key Features
 + Copy/Paste between Emacs in terminal and system clipboard
 + Preserves standard Emacs keybindings (=C-w=, =M-w=, =C-y=)
 + Automatic detection of terminal vs graphical mode
 
-* Installation
-** Using package managers
-*** straight.el
+** Installation
+*** Using package managers
+**** straight.el
 #+begin_src emacs-lisp
   (straight-use-package
    '(termclip :type git :host github :repo "judaew/termclip.el"))
@@ -20,25 +19,26 @@
   (use-package termclip
     :straight (termclip :type git :host github :repo "judaew/termclip.el"))
 #+end_src
-*** use-package
+**** use-package
 NOTE: Current don't support MELPA
 #+begin_src emacs-lisp
   (use-package termclip
     :ensure t)
 #+end_src
-** Manual Installation
-Add =termclip.el= to your =load-path= and require. Something like
+*** Manual Installation
+Add =termclip.el= to your =load-path= and require. Something like:
 #+begin_src emacs-lisp
   (add-to-list 'load-path "path/to/termclip.el")
   (require 'termclip)
 #+end_src
-* Requirements
+
+** Requirements
 Clipboard tool:
 + *Wayland*: =wl-clipboard= ([[https://github.com/bugaevc/wl-clipboard][GitHub]], [[https://archlinux.org/packages/extra/x86_64/wl-clipboard/][ArchLinux]], [[https://launchpad.net/ubuntu/kinetic/+package/wl-clipboard][Ubuntu]])
-+ =X.Org=: =xsel= ([[https://github.com/kfish/xsel][GitHub]], [[https://archlinux.org/packages/extra/x86_64/xsel/][ArchLinux]], [[https://launchpad.net/ubuntu/kinetic/+package/xsel][Ubuntu]]) or =xclip= ([[https://github.com/astrand/xclip][GitHub]], [[https://archlinux.org/packages/extra/x86_64/xclip/][ArchLinux]], [[https://launchpad.net/ubuntu/kinetic/+package/xclip][Ubuntu]])
-+ =macOS=: package uses the built-in system clipboard tool
++ *X.Org*: =xsel= ([[https://github.com/kfish/xsel][GitHub]], [[https://archlinux.org/packages/extra/x86_64/xsel/][ArchLinux]], [[https://launchpad.net/ubuntu/kinetic/+package/xsel][Ubuntu]]) or =xclip= ([[https://github.com/astrand/xclip][GitHub]], [[https://archlinux.org/packages/extra/x86_64/xclip/][ArchLinux]], [[https://launchpad.net/ubuntu/kinetic/+package/xclip][Ubuntu]])
++ *macOS*: package uses the built-in system clipboard tool
 
-* Configuration
+** Configuration
 The =termclip-clipboard-tool= options specifies the tool used for clipboard copy/paste operation. The default value is set to =wayland= (with the =wl-clipboard= tool). Other available values are:
 + =xorg-xsel= - for the X.Org with the =xsel= tool
 + =xorg-xclip= - for the X.Org with the =xclip= tool
@@ -50,12 +50,12 @@ The =termclip-clipboard-tool= options specifies the tool used for clipboard copy
     (termclip-clipboard-tool 'wayland))
 #+end_src
 
-* Why Use This?
+** Why Use This?
 When running Emacs in terminal mode (e.g., via =emacs -nw= or in terminal multiplexers), the standard clipboard integration doesn't work. This package solves that by:
 
 - Bridging Emacs' kill-ring with system clipboard
 - Maintaining familiar keybindings
 - Working automatically in terminal mode
 
-* License
-MIT (see [[file:LICENSE][LICENSE]] file)
+** License
+MIT (see [[file:LICENSE][LICENSE]] file).
