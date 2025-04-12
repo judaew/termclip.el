@@ -68,9 +68,7 @@ ARGS contains (BEGIN END) region coordinates."
 (defun termclip--advice-yank (orig-fun &rest args)
   "Paste from system clipboard instead of `kill-ring' in terminal frames.
 Works as :around advice for `yank' (ORIG-FUN ARGS)."
-  (if (not (display-graphic-p))
-      (termclip--paste)
-    (apply orig-fun args)))
+  (termclip--paste))
 
 (defun termclip--copy-to-clipboard (begin end)
   "Copy region between BEGIN and END to system clipboard."
@@ -91,6 +89,7 @@ Works as :around advice for `yank' (ORIG-FUN ARGS)."
     (condition-case err
       (let* ((raw-cmd (termclip--get-command 'paste))
              (cmd-parts (split-string-and-unquote raw-cmd))
+	     
              (clipboard-text (shell-command-to-string (string-join cmd-parts " "))))
         (insert clipboard-text))
       (error (message "Failed to paste from system clipboard: %s"
@@ -100,13 +99,13 @@ Works as :around advice for `yank' (ORIG-FUN ARGS)."
   "Enable terminal clipboard advice (\=termclip.el\=)."
   (advice-add 'kill-region :around #'termclip--advice-kill-region)
   (advice-add 'kill-ring-save :around #'termclip--advice-kill-ring-save)
-  (advice-add 'kill-yank :around #'termclip--advice-yank))
+  (advice-add 'yank :around #'termclip--advice-yank))
 
 (defun termclip--disable-advice ()
   "Disable terminal clipboard advice (\=termclip.el\=)."
   (advice-remove 'kill-region #'termclip--advice-kill-region)
   (advice-remove 'kill-ring-save #'termclip--advice-kill-ring-save)
-  (advice-remove 'kill-yank #'termclip--advice-yank))
+  (advice-remove 'yank #'termclip--advice-yank))
 
 ;;;###autoload
 (define-minor-mode termclip-mode
