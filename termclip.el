@@ -126,7 +126,7 @@ Works as :around advice for `yank' (ORIG-FUN ARGS)."
 (if (daemonp)
     (add-hook 'after-make-frame-functions #'termclip-setup-if-needed)
   (unless (display-graphic-p)
-      (termclip-mode 1))))
+      (termclip-mode 1)))
 
 (provide 'termclip)
 
