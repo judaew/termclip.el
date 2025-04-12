@@ -54,16 +54,20 @@ TYPE must be either \=copy\= or \=paste\="
     cmd))
 
 (defun termclip--advice-kill-region (orig-fun &rest args)
-  "Advice for `kill-region' (as ORIG-FUN with ARGS)."
+  "Cut region to system clipboard after `kill-region' (ORIG-FUN).
+ARGS contains (BEGIN END) region coordinates."
+  (apply orig-fun args)
   (termclip--copy-to-clipboard (car args) (cadr args)))
 
 (defun termclip--advice-kill-ring-save (orig-fun &rest args)
-  "Advice for `kill-ring-save' (as ORIG-FUN with ARGS)."
+  "Copy region to system clipboard after `kill-ring-save' (ORIG-FUN).
+ARGS contains (BEGIN END) region coordinates."
   (apply orig-fun args)
   (termclip--copy-to-clipboard (car args) (cadr args)))
 
 (defun termclip--advice-yank (orig-fun &rest args)
-  "Advice for `yank' (as ORIG-FUN with ARGS)."
+  "Paste from system clipboard instead of `kill-ring' in terminal frames.
+Works as :around advice for `yank' (ORIG-FUN ARGS)."
   (if (not (display-graphic-p))
       (termclip--paste)
     (apply orig-fun args)))
