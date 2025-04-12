@@ -53,68 +53,67 @@ TYPE must be either \=copy\= or \=paste\="
 	(error "Clipboard tool '%s' not found in PATH" bin)))
     cmd))
 
-(defun termclip-kill-region (begin end)
-  "Cut region between BEGIN and END to system clipboard."
-  (interactive "r")
-  (condition-case err
-      (let* ((raw-cmd (termclip--get-command 'copy))
-             (cmd-parts (split-string-and-unquote raw-cmd)))
-        
-        (apply #'call-process-region begin end
-               (car cmd-parts) nil nil nil
-               (cdr cmd-parts))
-        
-        (delete-region begin end))
-    
-    (error
-     (message "Failed to cut to clipboard: %s" (error-message-string err)))))
+(defun termclip--advice-kill-region (orig-fun &rest args)
+  "Advice for `kill-region' (as ORIG-FUN with ARGS)."
+  (termclip--copy-to-clipboard (car args) (cadr args)))
 
-(defun termclip-kill-ring-save (begin end)
+(defun termclip--advice-kill-ring-save (orig-fun &rest args)
+  "Advice for `kill-ring-save' (as ORIG-FUN with ARGS)."
+  (apply orig-fun args)
+  (termclip--copy-to-clipboard (car args) (cadr args)))
+
+(defun termclip--advice-yank (orig-fun &rest args)
+  "Advice for `yank' (as ORIG-FUN with ARGS)."
+  (if (not (display-graphic-p))
+      (termclip--paste)
+    (apply orig-fun args)))
+
+(defun termclip--copy-to-clipboard (begin end)
   "Copy region between BEGIN and END to system clipboard."
-  (interactive "r")
   (condition-case err
       (let* ((raw-cmd (termclip--get-command 'copy))
-             (cmd-parts (split-string-and-unquote raw-cmd)))
-        (apply #'call-process-region begin end
-               (car cmd-parts) nil nil nil
-               (cdr cmd-parts))
+	     (cmd-parts (split-string-and-unquote raw-cmd)))
 	
-	(deactivate-mark))
-    (error
-     (message "Failed to copy to clipboard: %s" (error-message-string err)))))
+	(apply #'call-process-region begin end
+	       (car cmd-parts) nil nil nil
+	       (cdr cmd-parts)))
+    
+    (error (message "Failed to copy to system clipboard: %s"
+		    (error-message-string err)))))
 
-(defun termclip-yank ()
+(defun termclip--paste ()
   "Paste contents from system clipboard."
   (interactive)
-  (condition-case err
+    (condition-case err
       (let* ((raw-cmd (termclip--get-command 'paste))
              (cmd-parts (split-string-and-unquote raw-cmd))
              (clipboard-text (shell-command-to-string (string-join cmd-parts " "))))
         (insert clipboard-text))
-    (error
-     (message "Failed to paste from clipboard: %s"
-	      (error-message-string err)))))
+      (error (message "Failed to paste from system clipboard: %s"
+		      (error-message-string err)))))
 
-(defvar termclip-mode-map (make-sparse-keymap)
-  "Keymap for terminal clipboard mode.")
+(defun termclip--enable-advice ()
+  "Enable terminal clipboard advice (\=termclip.el\=)."
+  (advice-add 'kill-region :around #'termclip--advice-kill-region)
+  (advice-add 'kill-ring-save :around #'termclip--advice-kill-ring-save)
+  (advice-add 'kill-yank :around #'termclip--advice-yank))
 
-(defun termclip--enable-bindings ()
-  "Enable terminal clipboard keybindings."
-  (define-key termclip-mode-map [remap kill-region] #'termclip-kill-region)
-  (define-key termclip-mode-map [remap kill-ring-save] #'termclip-kill-ring-save)
-  (define-key termclip-mode-map [remap yank] #'termclip-yank))
+(defun termclip--disable-advice ()
+  "Disable terminal clipboard advice (\=termclip.el\=)."
+  (advice-remove 'kill-region #'termclip--advice-kill-region)
+  (advice-remove 'kill-ring-save #'termclip--advice-kill-ring-save)
+  (advice-remove 'kill-yank #'termclip--advice-yank))
 
 ;;;###autoload
 (define-minor-mode termclip-mode
-  "Minor mode for terminal clipboard integration."
+  "Minor mode for terminal clipboard Integration."
   :init-value nil
   :global t
-  :lighter "termclip"
-  :keymap termclip-mode-map
+  :lighter " tc"
   (if termclip-mode
-      (termclip--enable-bindings)))
+      (termclip--enable-advice)
+    (termclip--disable-advice)))
 
-;;;###autoload
 (defun termclip-setup-if-needed (frame)
   "Configure termclip-mode for newly created FRAME."
   (with-selected-frame frame
@@ -123,7 +122,7 @@ TYPE must be either \=copy\= or \=paste\="
 (if (daemonp)
     (add-hook 'after-make-frame-functions #'termclip-setup-if-needed)
   (unless (display-graphic-p)
-    (termclip-mode 1)))
+      (termclip-mode 1))))
 
 (provide 'termclip)
 
